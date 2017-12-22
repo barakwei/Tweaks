@@ -17,12 +17,8 @@
 #import "_FBTweakArrayViewController.h"
 #import "_FBKeyboardManager.h"
 
-@interface _FBTweakCollectionViewController () <UITableViewDelegate, UITableViewDataSource>
-@end
-
 @implementation _FBTweakCollectionViewController {
-  UITableView *_tableView;
-  NSArray *_sortedCollections;
+   NSArray<FBTweakCollection *> *_sortedCollections;
   _FBKeyboardManager *_keyboardManager;
 }
 
@@ -30,7 +26,12 @@
 {
   if ((self = [super init])) {
     _tweakCategory = category;
+    self.clearsSelectionOnViewWillAppear = YES;
     self.title = _tweakCategory.name;
+    self.refreshControl = [[UIRefreshControl alloc] init];
+    [self.refreshControl addTarget:self
+                            action:@selector(_reloadData)
+                  forControlEvents:UIControlEventValueChanged];
     [self _reloadData];
   }
   
@@ -41,28 +42,15 @@
 {
   [super viewDidLoad];
 
-  _tableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStyleGrouped];
-  _tableView.delegate = self;
-  _tableView.dataSource = self;
-  _tableView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-  [self.view addSubview:_tableView];
-  
   self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_done)];
 
-  _keyboardManager = [[_FBKeyboardManager alloc] initWithViewScrollView:_tableView];
-}
-
-- (void)dealloc
-{
-  _tableView.delegate = nil;
-  _tableView.dataSource = nil;
+  _keyboardManager = [[_FBKeyboardManager alloc] initWithViewScrollView:self.tableView];
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
   [super viewWillAppear:animated];
   
-  [_tableView deselectRowAtIndexPath:_tableView.indexPathForSelectedRow animated:animated];
   [self _reloadData];
 
   [_keyboardManager enable];
@@ -79,7 +67,7 @@
   _sortedCollections = [_tweakCategory.tweakCollections sortedArrayUsingComparator:^(FBTweakCollection *a, FBTweakCollection *b) {
     return [a.name localizedStandardCompare:b.name];
   }];
-  [_tableView reloadData];
+  [self.tableView reloadData];
 }
 
 - (void)_done
