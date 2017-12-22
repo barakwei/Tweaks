@@ -26,7 +26,7 @@
   _FBKeyboardManager *_keyboardManager;
 }
 
-- (instancetype)initWithTweakCategory:(FBTweakCategory *)category
+- (instancetype)initWithTweakCategory:(id<FBTweakCategory>)category
 {
   if ((self = [super init])) {
     _tweakCategory = category;
