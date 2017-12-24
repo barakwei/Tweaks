@@ -10,12 +10,12 @@
 #import "FBTweakCollection.h"
 #import "FBTweakCategory.h"
 #import "FBTweak.h"
+#import "_FBKeyboardManager.h"
+#import "_FBTweakArrayViewController.h"
 #import "_FBTweakCollectionViewController.h"
-#import "_FBTweakTableViewCell.h"
 #import "_FBTweakColorViewController.h"
 #import "_FBTweakDictionaryViewController.h"
-#import "_FBTweakArrayViewController.h"
-#import "_FBKeyboardManager.h"
+#import "_FBTweakTableViewCell.h"
 
 @implementation _FBTweakCollectionViewController {
    NSArray<FBTweakCollection *> *_sortedCollections;
@@ -28,14 +28,33 @@
     _tweakCategory = category;
     self.clearsSelectionOnViewWillAppear = YES;
     self.title = _tweakCategory.name;
-    self.refreshControl = [[UIRefreshControl alloc] init];
-    [self.refreshControl addTarget:self
-                            action:@selector(_reloadData)
-                  forControlEvents:UIControlEventValueChanged];
-    [self _reloadData];
+
+    [(id)self.tweakCategory addObserver:self
+                             forKeyPath:NSStringFromSelector(@selector(tweakCollections))
+                                options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
+                                context:nil];
+
+    if ([self _supportsUpdates]) {
+      self.refreshControl = [[UIRefreshControl alloc] init];
+      [self.refreshControl addTarget:self action:@selector(_updateCategory)
+                    forControlEvents:UIControlEventValueChanged];
+    }
   }
   
   return self;
+}
+
+- (void)dealloc
+{
+  [(id)self.tweakCategory removeObserver:self
+                              forKeyPath:NSStringFromSelector(@selector(tweakCollections))];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(NSArray<FBTweakCollection *> *)tweakCollections change:(NSDictionary *)change context:(void *)context
+{
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self _reloadData];
+  });
 }
 
 - (void)viewDidLoad
@@ -60,6 +79,41 @@
 {
   [super viewWillDisappear:animated];
   [_keyboardManager disable];
+}
+
+- (BOOL)_supportsUpdates {
+  return [self.tweakCategory respondsToSelector:@selector(updateWithCompletion:)];
+}
+
+- (void)_updateCategory {
+  self.refreshControl.attributedTitle =
+      [[NSAttributedString alloc] initWithString:@"Refreshing..."];
+  [self.refreshControl beginRefreshing];
+  [self.tweakCategory updateWithCompletion:^(NSError * _Nullable error) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [self.refreshControl endRefreshing];
+        if (error) {
+          [self presentViewController:[self errorAlertControllerWithError:error] animated:YES
+                           completion:nil];
+        }
+      });
+    }];
+}
+
+- (UIAlertController *)errorAlertControllerWithError:(NSError * _Nonnull)error {
+  NSString *alertMessage = [NSString stringWithFormat:@"An error occured while updating: %@.",
+                            error.description];
+  UIAlertController *alertController = [UIAlertController
+                                        alertControllerWithTitle:@"Error updating catergory"
+                                        message:alertMessage
+                                        preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction *okAction = [UIAlertAction
+                             actionWithTitle:NSLocalizedString(@"OK", @"OK action")
+                             style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction __unused *action){}];
+
+  [alertController addAction:okAction];
+  return alertController;
 }
 
 - (void)_reloadData
