@@ -9,7 +9,12 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class FBTweakCollection;
+
+/// Block to be called when a category update operation has been completed.
+typedef void (^FBTweakCategoryUpdateBlock)(NSError * _Nullable error);
 
 /**
   @abstract A named grouping of collections.
@@ -30,13 +35,13 @@
 /**
   @abstract The collections contained in this category.
  */
-@property (nonatomic, copy, readonly) NSArray *tweakCollections;
+@property (nonatomic, copy, readonly) NSArray<FBTweakCollection *> *tweakCollections;
 
 /**
   @abstract Fetches a collection by name.
   @param name The collection name to find.
  */
-- (FBTweakCollection *)tweakCollectionWithName:(NSString *)name;
+- (FBTweakCollection * _Nullable)tweakCollectionWithName:(NSString *)name;
 
 /**
  @abstract Adds a tweak collection to the category.
@@ -50,4 +55,16 @@
  */
 - (void)removeTweakCollection:(FBTweakCollection *)tweakCollection;
 
+/**
+ @abstract Asynchronously updates \c tweakCollections to the latest value, and calls \c completion
+ when done. Upon error \c error is set, otherwise \c error is \c nil.
+ @param completion Completion block to be called when the update is complete. \c completion can be
+ called after this method returns.
+ @discussion When the update operation is complete, is it expected that the \c tweakCollection will
+ be update with the latest object.
+ */
+- (void)updateWithCompletion:(FBTweakCategoryUpdateBlock)completion;
+
 @end
+
+NS_ASSUME_NONNULL_END
