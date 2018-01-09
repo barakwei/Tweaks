@@ -11,32 +11,27 @@
 #import "FBTweak.h"
 
 @implementation FBTweakCollection {
-  NSMutableArray *_orderedTweaks;
+  NSArray *_orderedTweaks;
   NSMutableDictionary *_identifierTweaks;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)coder
 {
   NSString *name = [coder decodeObjectForKey:@"name"];
-  
-  if ((self = [self initWithName:name])) {
-    _orderedTweaks = [[coder decodeObjectForKey:@"tweaks"] mutableCopy];
-    
-    for (FBTweak *tweak in _orderedTweaks) {
-      [_identifierTweaks setObject:tweak forKey:tweak.identifier];
-    }
-  }
-  
-  return self;
+  NSArray<FBTweak *> *tweaks = [[coder decodeObjectForKey:@"tweaks"] copy];
+
+  return [self initWithName:name tweaks:tweaks];
 }
 
-- (instancetype)initWithName:(NSString *)name
+- (instancetype)initWithName:(NSString *)name tweaks:(NSArray<FBTweak *> *)tweaks
 {
   if ((self = [super init])) {
     _name = [name copy];
-    
-    _orderedTweaks = [[NSMutableArray alloc] initWithCapacity:4];
+    _orderedTweaks = tweaks;
     _identifierTweaks = [[NSMutableDictionary alloc] initWithCapacity:4];
+    for (FBTweak *tweak in self.tweaks) {
+      [_identifierTweaks setObject:tweak forKey:tweak.identifier];
+    }
   }
   
   return self;
@@ -56,18 +51,6 @@
 - (NSArray *)tweaks
 {
   return [_orderedTweaks copy];
-}
-
-- (void)addTweak:(FBTweak *)tweak
-{
-  [_orderedTweaks addObject:tweak];
-  [_identifierTweaks setObject:tweak forKey:tweak.identifier];
-}
-
-- (void)removeTweak:(FBTweak *)tweak
-{
-  [_orderedTweaks removeObject:tweak];
-  [_identifierTweaks removeObjectForKey:tweak.identifier];
 }
 
 @end

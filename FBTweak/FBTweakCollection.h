@@ -16,11 +16,12 @@
  */
 @interface FBTweakCollection : NSObject <NSCoding>
 
+- (instancetype)init NS_UNAVAILABLE;
+
 /**
   @abstract Creates a tweak collection.
-  @discussion This is the designated initializer.
  */
-- (instancetype)initWithName:(NSString *)name;
+- (instancetype)initWithName:(NSString *)name tweaks:(NSArray<FBTweak *> *)tweaks NS_DESIGNATED_INITIALIZER;
 
 /**
   @abstract The name of the collection.
@@ -30,7 +31,7 @@
 /**
   @abstract The tweaks contained in this collection.
  */
-@property (nonatomic, copy, readonly) NSArray *tweaks;
+@property (nonatomic, copy, readonly) NSArray<FBTweak *> *tweaks;
 
 /**
   @abstract Fetches a tweak by identifier.
@@ -38,17 +39,5 @@
   @discussion Only search tweaks in this collection.
  */
 - (FBTweak *)tweakWithIdentifier:(NSString *)identifier;
-
-/**
-  @abstract Adds a tweak to the collection.
-  @param tweak The tweak to add.
- */
-- (void)addTweak:(FBTweak *)tweak;
-
-/**
-  @abstract Removes a tweak from the collection.
-  @param tweak The tweak to remove.
- */
-- (void)removeTweak:(FBTweak *)tweak;
 
 @end
