@@ -19,7 +19,7 @@
 - (instancetype)initWithCoder:(NSCoder *)coder
 {
   NSString *name = [coder decodeObjectForKey:@"name"];
-  NSArray *collections = [coder decodeObjectForKey:@"collections"];
+  NSArray<FBTweakCollection *> *collections = [coder decodeObjectForKey:@"collections"];
 
   return [self initWithName:name tweakCollections:collections];
 }

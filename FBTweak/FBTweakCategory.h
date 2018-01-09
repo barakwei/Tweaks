@@ -29,7 +29,7 @@ typedef void (^FBTweakCategoryUpdateBlock)(NSError * _Nullable error);
 - (instancetype)initWithName:(NSString *)name;
 
 /**
- @abstract Creates a tweak category, and initial tweak collections.
+ @abstract Creates a tweak category with an initial tweak collections.
  */
 - (instancetype)initWithName:(NSString *)name tweakCollections:(NSArray<FBTweakCollection *> *)tweakCollections NS_DESIGNATED_INITIALIZER;
 
@@ -68,11 +68,11 @@ typedef void (^FBTweakCategoryUpdateBlock)(NSError * _Nullable error);
 
 /**
  @abstract Asynchronously updates \c tweakCollections to the latest value, and calls \c completion
- when done. Upon error \c error is set, otherwise \c error is \c nil.
- @param completion Completion block to be called when the update is complete. \c completion can be
- called after this method returns.
+ when done. Error is reported by the means of \c completion's \c error argument, which is set upon
+ an error or \c nil otherwise.
+ @param completion Completion block to be called when the update is complete.
  @discussion When the update operation is complete, is it expected that the \c tweakCollection will
- be update with the latest object.
+ be up-to-date.
  */
 - (void)updateWithCompletion:(FBTweakCategoryUpdateBlock)completion;
 
