@@ -30,6 +30,14 @@ static CFTimeInterval _FBTweakShakeWindowMinTimeInterval = 0.4;
     self->_shakeEnabled = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationWillResignActiveWithNotification:) name:UIApplicationWillResignActiveNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidBecomeActiveWithNotification:) name:UIApplicationDidBecomeActiveNotification object:nil];
+
+#if FB_TWEAK_ENABLED
+    UITapGestureRecognizer *threeFingersDoubleTapRecognizer =
+        [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_presentTweaks)];
+    threeFingersDoubleTapRecognizer.numberOfTapsRequired = 2;
+    threeFingersDoubleTapRecognizer.numberOfTouchesRequired = 3;
+    [self addGestureRecognizer:threeFingersDoubleTapRecognizer];
+#endif
   }
   return self;
 }
